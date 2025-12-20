@@ -34,7 +34,7 @@ GND         ----> GND
 ## Installation
 
 ### Option 1: Web Flasher (Easiest)
-1. Visit the [download page](https://YOUR_USERNAME.github.io/Wemos_Filament_Turner/)
+1. Visit the [download page](https://mybesttools.github.io/Wemos-Filament-Turner/)
 2. Click "Flash Firmware"
 3. Select your USB port and click "Connect"
 4. Wait for upload to complete
