@@ -4,7 +4,7 @@ A firmware for controlling a filament turner using a Wemos D1 clone, 28BYJ-48 st
 
 ## Features
 
-- ✅ Automatic 180° rotation every 30 minutes
+- ✅ Automatic 360° rotation every 30 minutes
 - ✅ Immediate startup rotation
 - ✅ Smooth half-step motor control
 - ✅ Low power coil de-energization
