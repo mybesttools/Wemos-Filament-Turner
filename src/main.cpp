@@ -28,23 +28,23 @@
 
 // Motor control constants
 #define STEPS_PER_ROTATION 4076  // Full rotation
-#define STEPS_FOR_180 2048       // 180 degree rotation
+#define STEPS_FOR_60 679         // 60 degree rotation (6 rotations = 360° in 30 minutes)
 #define DELAY_BETWEEN_STEPS 2    // Milliseconds (slower = more torque)
 
 // Timing constants
-#define ROTATION_INTERVAL 30 * 60 * 1000  // 30 minutes in milliseconds
+#define ROTATION_INTERVAL 5 * 60 * 1000  // 5 minutes in milliseconds
 unsigned long lastRotationTime = 0;
 
-// Stepper sequence for half-step mode (smoother motion)
+// Stepper sequence for half-step mode (smoother motion) - REVERSED DIRECTION
 int stepSequence[8][4] = {
-  {1, 0, 0, 0},
-  {1, 1, 0, 0},
-  {0, 1, 0, 0},
-  {0, 1, 1, 0},
-  {0, 0, 1, 0},
-  {0, 0, 1, 1},
+  {1, 0, 0, 1},
   {0, 0, 0, 1},
-  {1, 0, 0, 1}
+  {0, 0, 1, 1},
+  {0, 0, 1, 0},
+  {0, 1, 1, 0},
+  {0, 1, 0, 0},
+  {1, 1, 0, 0},
+  {1, 0, 0, 0}
 };
 
 int currentStep = 0;
@@ -68,11 +68,11 @@ void setup() {
   digitalWrite(IN4, LOW);
   
   Serial.println("\nFilament Turner Started");
-  Serial.println("Will rotate 180° every 30 minutes");
+  Serial.println("Will rotate 60° every 5 minutes (full 360° rotation in ~30 minutes)");
   
   // Do first rotation immediately on startup
   Serial.println("Performing initial rotation...");
-  rotateStepper(STEPS_FOR_180);
+  rotateStepper(STEPS_FOR_60);
   Serial.println("Initial rotation complete");
   
   // Set timer for next rotation
@@ -85,7 +85,7 @@ void loop() {
   // Check if 30 minutes have passed
   if (currentTime - lastRotationTime >= ROTATION_INTERVAL) {
     Serial.println("Rotating...");
-    rotateStepper(STEPS_FOR_180);
+    rotateStepper(STEPS_FOR_60);
     lastRotationTime = currentTime;
     Serial.println("Rotation complete");
   }
