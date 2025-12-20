@@ -293,60 +293,59 @@
         </div>
     </div>
     
-    <script type="module">
-        import { Serial } from 'https://cdn.jsdelivr.net/npm/web-serial-polyfill@latest/dist/index.min.js';
+    <script>
+        // Simple initialization - remove complex async imports
+        window.addEventListener('DOMContentLoaded', function() {
+            const status = document.getElementById('status');
+            
+            // Check if Web Serial API is available
+            if (navigator.serial) {
+                status.innerHTML = '✅ Web Serial API available - You can use direct flashing';
+                status.className = 'status info';
+            } else {
+                status.innerHTML = '💡 Web Serial API not available in your browser. Use the download method below or try Chrome/Edge.';
+                status.className = 'status info';
+            }
+        });
         
         window.flashFirmware = async function() {
+            const status = document.getElementById('status');
+            
+            if (!navigator.serial) {
+                status.innerHTML = '📥 Downloading firmware... Open it with esptool.py or Arduino IDE';
+                status.className = 'status info';
+                downloadFirmware();
+                return;
+            }
+            
             try {
-                // Check browser support
-                if (!navigator.serial) {
-                    // Fallback: show download instructions
-                    showStatus('Web Serial API not available. Using download method...', 'info');
-                    downloadFirmware();
-                    return;
-                }
-                
-                showStatus('Requesting serial port...', 'info');
+                status.innerHTML = '🔍 Requesting serial port...';
+                status.className = 'status info';
                 
                 const port = await navigator.serial.requestPort();
                 await port.open({ baudRate: 115200 });
                 
-                showStatus('Connected! Flashing firmware...', 'info');
-                
-                // In a real implementation, you would use esptool.js or similar
-                // For now, we'll show a download fallback
-                showStatus('ℹ️ Please use Platform IO or Arduino IDE to flash. <br> <a href="firmware/filament_turner.bin" download>Download firmware</a>', 'info');
+                status.innerHTML = '⚠️ Web flashing not yet implemented. Please use the download method.';
+                status.className = 'status error';
                 
                 await port.close();
+                downloadFirmware();
                 
             } catch (err) {
-                if (err.name === 'NotFoundError') {
-                    showStatus('⚠️ No serial port selected', 'error');
-                } else {
-                    showStatus('Download the firmware and use Platform IO or Arduino IDE', 'info');
-                }
+                status.innerHTML = '📥 <strong>Download the firmware binary</strong> and use:<br>' +
+                                 '• Arduino IDE (Tools → Upload)<br>' +
+                                 '• esptool.py: <code>esptool.py write_flash 0x0 firmware.bin</code>';
+                status.className = 'status info';
+                downloadFirmware();
             }
         }
         
         function downloadFirmware() {
             const link = document.createElement('a');
-            link.href = 'firmware/filament_turner.bin';
+            link.href = 'https://github.com/mybesttools/Wemos-Filament-Turner/releases/download/latest/filament_turner.bin';
             link.download = 'filament_turner.bin';
             link.click();
         }
-        
-        function showStatus(message, type) {
-            const status = document.getElementById('status');
-            status.innerHTML = message;
-            status.className = 'status ' + type;
-        }
-        
-        // Check browser compatibility on load
-        window.addEventListener('load', () => {
-            if (!navigator.serial) {
-                showStatus('💡 Tip: For best experience, use Chrome/Chromium-based browsers. <a href="#" onclick="downloadFirmware(); return false;">Or download the firmware</a>', 'info');
-            }
-        });
     </script>
 </body>
 </html>
