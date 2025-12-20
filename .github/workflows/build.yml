@@ -44,3 +44,17 @@ jobs:
         git diff --quiet && git diff --staged --quiet || (git commit -m "Build firmware: $(date)" && git push)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          docs/firmware/filament_turner.bin
+        tag_name: v${{ github.run_number }}
+        name: Build ${{ github.run_number }}
+        body: |
+          Automated firmware build from latest commit
+          **Commit**: ${{ github.sha }}
+          **Date**: $(date)
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
