@@ -1,10 +1,11 @@
 # Filament Turner Controller - Build Guide
 
 ## ⚡ Features
-- **Automatic rotation** every 5 minutes
-- **Complete 360° rotation** in approximately 30 minutes
+- **720°/hour rotation** - Continuous smooth filament turner
+- **Complete 360° every 30 minutes** - Full rotation cycle
+- **5-minute intervals** - 60° increment per cycle
 - **USB powered** - works with any 5V USB charger
-- **Easy installation** - no soldering required (optional breadboard method, recommended to solder 6 wiresfor a clean setup)
+- **Easy installation** - no soldering required (optional breadboard method, recommended to solder 6 wires for a clean setup)
 - **Open source firmware** - customizable and upgradeable
 
 ---
@@ -37,7 +38,10 @@ I suggest to solder it for in your final build.
 2. **28BYJ-48 Motor** - Geared stepper motor with 4 coil wires (typically colored brown, orange, pink, yellow)
 3. **ULN2003AN Board** - Darlington driver with 4 signal inputs (IN1-IN4) and motor connection terminals
 
-### Step 2: Pin Connections
+### Step 2: Motor Rotation Direction
+The firmware is configured to rotate **720°/hour** - one complete 360° rotation every 30 minutes. If you want to reverse the direction after assembly, swap any two motor coil wires.
+
+### Step 3: Pin Connections
 Connect the following Wemos D1 pins to the ULN2003AN driver board:
 
 ```
@@ -123,11 +127,12 @@ After flashing firmware:
 
 1. **Motor rotates immediately** - The device will perform an initial rotation on startup
 2. **Every 5 minutes** - Motor rotates 60° continuously
-3. **Full rotation in ~30 minutes** - After 6 rotations (360°)
+3. **Full 360° rotation** - Completed every 30 minutes (720°/hour)
 
 ### Serial Monitor Output (Optional)
 To see detailed status, open Serial Monitor at **115200 baud**:
 - "Filament Turner Started"
+- "Rotating at 720°/hour (360° every 30 minutes)"
 - "Performing initial rotation..."
 - "Rotation complete"
 - Then logs every 5 minutes

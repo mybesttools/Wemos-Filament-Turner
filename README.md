@@ -1,13 +1,16 @@
 # Wemos Filament Turner Controller
 
-A firmware for controlling a filament turner using a Wemos D1 clone, 28BYJ-48 stepper motor, and ULN2003AN driver. The device rotates 180 degrees every 30 minutes automatically.
+A firmware for controlling a filament turner using a Wemos D1 clone, 28BYJ-48 stepper motor, and ULN2003AN driver. The device rotates continuously at **720° per hour** (one complete 360° rotation every 30 minutes).
 
 ## Features
 
-- ✅ Automatic 180° rotation every 30 minutes
+- ✅ Continuous rotation at 720°/hour
+- ✅ Complete 360° rotation every 30 minutes
+- ✅ 60° movement every 5 minutes
 - ✅ Immediate startup rotation
 - ✅ Smooth half-step motor control
 - ✅ Low power coil de-energization
+- ✅ USB powered (works with any 5V charger)
 - ✅ Serial monitoring for debugging
 
 ## Hardware Requirements

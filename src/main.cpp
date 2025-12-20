@@ -2,7 +2,8 @@
  * Filament Turner Controller
  * Wemos D1 Clone + 28BYJ-48 Stepper Motor + ULN2003AN Driver
  * 
- * Rotates 180 degrees every 30 minutes in the same direction
+ * Rotation: 720°/hour (60° every 5 minutes)
+ * Complete 360° rotation every 30 minutes
  * 
  * Pin Connections (Wemos D1 -> ULN2003AN):
  * D1 (GPIO5)  -> IN1
@@ -27,8 +28,8 @@
 #define IN4 D4  // GPIO2
 
 // Motor control constants
-#define STEPS_PER_ROTATION 4076  // Full rotation
-#define STEPS_FOR_60 679         // 60 degree rotation (6 rotations = 360° in 30 minutes)
+#define STEPS_PER_ROTATION 4076  // Full rotation (360°)
+#define STEPS_FOR_60 679         // 60° rotation (720°/hour = 12 rotations/hour)
 #define DELAY_BETWEEN_STEPS 2    // Milliseconds (slower = more torque)
 
 // Timing constants
@@ -68,7 +69,7 @@ void setup() {
   digitalWrite(IN4, LOW);
   
   Serial.println("\nFilament Turner Started");
-  Serial.println("Will rotate 60° every 5 minutes (full 360° rotation in ~30 minutes)");
+  Serial.println("Rotating at 720°/hour (360° every 30 minutes)");
   
   // Do first rotation immediately on startup
   Serial.println("Performing initial rotation...");
