@@ -323,8 +323,6 @@
                 
                 const port = await navigator.serial.requestPort();
                 
-                // Open port first
-                await port.open({ baudRate: 115200 });
                 showStatus('⏳ Downloading firmware...', 'info');
                 
                 // Fetch firmware
@@ -335,67 +333,49 @@
                 
                 showStatus(`⏳ Flashing ${firmwareSize}KB to device...<br>Do NOT disconnect! This takes 1-2 minutes.`, 'info');
                 
-                // Trigger bootloader entry
-                showStatus('⏳ Entering bootloader mode...', 'info');
-                try {
-                    await port.setSignals({ dataTerminalReady: false, requestToSend: true });
-                    await sleep(100);
-                    await port.setSignals({ dataTerminalReady: true, requestToSend: false });
-                    await sleep(500);
-                } catch (e) {
-                    console.log('Note: Auto-bootloader may not work on all drivers. If flashing fails, manually enter bootloader mode.');
+                // Use ESP Web Tools for flashing - it handles port opening
+                if (!window.espWebTools) {
+                    throw new Error('ESP Web Tools library not loaded');
                 }
                 
-                // Use ESP Web Tools for flashing
-                if (window.espWebTools && window.espWebTools.flash) {
-                    showStatus('⏳ Flashing firmware...', 'info');
-                    await window.espWebTools.flash(port, {
-                        fileArray: [
-                            {
-                                address: 0x0,
-                                data: new Uint8Array(firmware)
-                            }
-                        ],
-                        flashMode: 'dio',
-                        flashFreq: '40m',
-                        flashSize: 'detect'
-                    });
-                    
-                    showStatus('✅ Firmware flashed successfully!<br><br>🎉 Your Filament Turner is ready!<br>Device will start rotating automatically in a few seconds.<br><br>See <a href="releases.html">releases page</a> for configuration options.', 'success');
-                    
-                    await port.close();
-                } else {
-                    throw new Error('ESP Web Tools not loaded');
-                }
+                // Create the transport and flash
+                const transport = new window.espWebTools.Transport(port);
+                const chip = new window.espWebTools.Chip(transport);
+                
+                showStatus('⏳ Detecting device...', 'info');
+                const chipName = await chip.getChipName();
+                
+                showStatus(`⏳ Found ${chipName}. Flashing firmware...`, 'info');
+                
+                await chip.flashBin({
+                    fileArray: [
+                        {
+                            address: 0x0,
+                            data: new Uint8Array(firmware)
+                        }
+                    ],
+                    flashMode: 'dio',
+                    flashFreq: '40m',
+                    flashSize: 'detect'
+                });
+                
+                showStatus('✅ Firmware flashed successfully!<br><br>🎉 Your Filament Turner is ready!<br>Device will start rotating automatically in a few seconds.<br><br>See <a href="releases.html">releases page</a> for configuration options.', 'success');
                 
             } catch (err) {
                 console.error('Flash error:', err);
                 
-                // Close port if still open
-                try {
-                    if (err.message && err.message.includes('Port is not open')) {
-                        // Port wasn't opened, continue
-                    }
-                } catch (e) {
-                    // Ignore
-                }
-                
                 if (err.name === 'NotFoundError' || err.message.includes('No port selected')) {
                     showStatus('❌ No serial port selected.<br><br>Make sure:<br>• Wemos D1 is connected via USB<br>• You have the correct drivers<br>• Try a different USB port/cable<br><br>Then try again.', 'error');
-                } else if (err.message.includes('permission')) {
+                } else if (err.message.includes('permission') || err.message.includes('Permission denied')) {
                     showStatus('❌ USB permission denied.<br><br><strong>Windows:</strong> Install <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP210x Driver</a><br><strong>Mac:</strong> Install drivers from device vendor<br><strong>Linux:</strong> Run: <code>sudo usermod -a -G dialout $USER</code><br><br>Restart browser after installing drivers.', 'error');
-                } else if (err.message.includes('ESP Web Tools not loaded')) {
-                    showStatus('❌ ESP Web Tools library failed to load.<br><br>Try manual flashing:<br><a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 Download firmware</a><br><br>Then use Arduino IDE, esptool.py, or PlatformIO<br><br>Or reload this page and try again.', 'error');
+                } else if (err.message.includes('not loaded')) {
+                    showStatus('❌ ESP Web Tools library failed to load. Try:<br><br>1. Reload this page<br>2. Clear browser cache<br>3. Try a different browser<br><br>Or use manual flashing:<br><a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 Download firmware</a>', 'error');
                 } else {
                     showStatus('❌ Error: ' + err.message + '<br><br>Try manual flashing:<br><a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 Download firmware</a><br><br>Then use Arduino IDE, esptool.py, or PlatformIO', 'error');
                 }
             } finally {
                 flashBtn.disabled = false;
             }
-        }
-        
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
         }
         
         function showStatus(message, type) {
