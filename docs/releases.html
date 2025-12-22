@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filament Turner - Releases</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .release {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .release-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .release-title {
+            font-size: 24px;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .release-tag {
+            background: #f0f4ff;
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        
+        .release-tag:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .release-date {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .release-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .release-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .section-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .download-link {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .download-link:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .release-notes {
+            color: #666;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .release-notes p {
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 600px) {
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .release {
+                padding: 20px;
+            }
+            
+            .release-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Installer</a>
+        
+        <div class="header">
+            <h1>🎞️ Filament Turner Releases</h1>
+            <p>Firmware versions and download history</p>
+        </div>
+        
+        <div class="release">
+            <div class="release-header">
+                <div>
+                    <div class="release-title">v0.99</div>
+                    <div class="release-date">Latest Release</div>
+                </div>
+                <a href="https://github.com/mybesttools/Wemos-Filament-Turner/releases/tag/v0.99" class="release-tag">View on GitHub</a>
+            </div>
+            
+            <div class="release-section">
+                <div class="section-title">📥 Downloads</div>
+                <a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" class="download-link" download="filament_turner.bin">⬇️ Download Firmware (.bin)</a>
+                <a href="https://github.com/mybesttools/Wemos-Filament-Turner/releases/download/v0.99/filament_turner.bin" class="download-link">⬇️ GitHub Release</a>
+            </div>
+            
+            <div class="release-section">
+                <div class="section-title">✨ Features</div>
+                <div class="release-notes">
+                    <p>✅ Continuous rotation at 720°/hour</p>
+                    <p>✅ Complete 360° rotation every 30 minutes</p>
+                    <p>✅ 60° movement every 5 minutes</p>
+                    <p>✅ USB powered (any 5V charger)</p>
+                    <p>✅ Smooth half-step motor control</p>
+                    <p>✅ Low power coil de-energization</p>
+                    <p>✅ Open source firmware</p>
+                </div>
+            </div>
+            
+            <div class="release-section">
+                <div class="section-title">🔧 Installation</div>
+                <div class="release-notes">
+                    <p><strong>Browser Flashing:</strong> Use the <a href="index.html" style="color: #667eea;">web installer</a> for the easiest experience.</p>
+                    <p><strong>Arduino IDE:</strong> Upload using Tools → Upload with the Filament_Turner.ino sketch.</p>
+                    <p><strong>PlatformIO:</strong> Run <code>platformio run --target upload</code></p>
+                    <p><strong>Manual:</strong> Use esptool.py: <code>esptool.py write_flash 0x0 filament_turner.bin</code></p>
+                </div>
+            </div>
+            
+            <div class="release-section">
+                <div class="section-title">📋 Requirements</div>
+                <div class="release-notes">
+                    <p>• Wemos D1 R1 or compatible clone</p>
+                    <p>• 28BYJ-48 stepper motor (5V)</p>
+                    <p>• ULN2003AN Darlington driver</p>
+                    <p>• 5V USB power supply</p>
+                </div>
+            </div>
+            
+            <div class="release-section">
+                <div class="section-title">📚 Documentation</div>
+                <div class="release-notes">
+                    <p><a href="https://github.com/mybesttools/Wemos-Filament-Turner/blob/main/docs/BUILD_GUIDE.md" style="color: #667eea;">Build Guide</a> - Hardware assembly and configuration</p>
+                    <p><a href="https://github.com/mybesttools/Wemos-Filament-Turner/blob/main/README.md" style="color: #667eea;">README</a> - Project overview</p>
+                    <p><a href="https://github.com/mybesttools/Wemos-Filament-Turner" style="color: #667eea;">GitHub Repository</a> - Source code</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Made with ❤️ by <a href="https://github.com/mybesttools">MyBestTools</a> · 
+            <a href="https://github.com/mybesttools/Wemos-Filament-Turner">GitHub</a> · 
+            <a href="https://github.com/mybesttools/Wemos-Filament-Turner/issues">Report Issue</a>
+        </div>
+    </div>
+</body>
+</html>
