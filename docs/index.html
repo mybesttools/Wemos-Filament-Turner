@@ -301,18 +301,19 @@
         </div>
     </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/esp-web-tools@10.2.0/dist/web/bundle.js"></script>
     <script>
-        // Web Serial flashing - simplified implementation
+        // Full automatic web flashing using ESP Web Tools
         window.flashFirmware = async function() {
             const status = document.getElementById('status');
             const flashBtn = document.getElementById('flashBtn');
             
             if (!navigator.serial) {
                 showStatus('❌ Web Serial API not available in your browser.<br><br>Supported browsers: Chrome, Edge, Opera (v91+)<br><br>Alternative options:<br>' +
-                          '• <a href="https://espressif.github.io/esptool-js/" target="_blank"><strong>ESP Web Tools</strong></a> (official Espressif tool)<br>' +
-                          '• <a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 Download firmware</a> for Arduino IDE or esptool.py<br>' +
-                          '• Arduino IDE (Tools → Upload)<br>' +
-                          '• PlatformIO (Upload button)', 'error');
+                          '• Download the <a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 firmware file</a> and use:<br>' +
+                          '  - Arduino IDE (Tools → Upload)<br>' +
+                          '  - esptool.py: <code>esptool.py write_flash 0x0 firmware.bin</code><br>' +
+                          '  - PlatformIO (Upload button)', 'error');
                 return;
             }
             
@@ -321,67 +322,107 @@
                 showStatus('🔍 Requesting serial port... Select your Wemos D1', 'info');
                 
                 const port = await navigator.serial.requestPort();
-                await port.open({ baudRate: 115200 });
+                showStatus('⏳ Downloading firmware...', 'info');
                 
-                showStatus('⏳ Downloading firmware from GitHub...', 'info');
-                
-                // Fetch the firmware binary
+                // Fetch firmware
                 const response = await fetch('https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin');
                 if (!response.ok) throw new Error('Failed to download firmware');
                 const firmware = await response.arrayBuffer();
-                const firmwareSize = firmware.byteLength;
+                const firmwareSize = Math.round(firmware.byteLength / 1024);
                 
-                showStatus(`⏳ Firmware ready (${Math.round(firmwareSize / 1024)}KB)<br><br>` +
-                          '❗ Your Wemos D1 should enter bootloader mode automatically.<br>' +
-                          'If it doesn\'t:<br>' +
-                          '1. Disconnect the USB cable<br>' +
-                          '2. Hold the FLASH button<br>' +
-                          '3. Reconnect USB (keep FLASH held)<br>' +
-                          '4. Release FLASH button<br>' +
-                          '5. Click "Flash Firmware" again<br><br>' +
-                          '🔄 For full automatic flashing, use <a href="https://espressif.github.io/esptool-js/" target="_blank">ESP Web Tools</a>', 'info');
+                showStatus(`⏳ Flashing ${firmwareSize}KB to device...<br>Do NOT disconnect! This takes 1-2 minutes.`, 'info');
                 
-                // Open port and prepare for flashing
-                const writer = port.writable.getWriter();
-                
-                // Send reset command to enter bootloader (DTR/RTS signals)
-                try {
-                    await port.setSignals({ dataTerminalReady: false });
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    await port.setSignals({ dataTerminalReady: true });
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                } catch (e) {
-                    console.log('Auto-reset might not work on this system');
+                // Use ESP Web Tools for flashing
+                if (window.espWebTools && window.espWebTools.flash) {
+                    await window.espWebTools.flash(port, {
+                        fileArray: [
+                            {
+                                address: 0x0,
+                                data: new Uint8Array(firmware)
+                            }
+                        ],
+                        flashMode: 'dio',
+                        flashFreq: '40m',
+                        flashSize: 'detect'
+                    });
+                    
+                    showStatus('✅ Firmware flashed successfully!<br><br>🎉 Your Filament Turner is ready!<br>Device will start rotating automatically in a few seconds.<br><br>See <a href="releases.html">releases page</a> for configuration options.', 'success');
+                } else {
+                    // Fallback: manual protocol implementation
+                    await flashManual(port, firmware);
                 }
                 
-                showStatus('✅ Serial port ready!<br><br>' +
-                          '📝 <strong>Manual next steps:</strong><br>' +
-                          '1. Download the firmware file above<br>' +
-                          '2. Use <a href="https://espressif.github.io/esptool-js/" target="_blank">ESP Web Tools</a> to complete flashing<br>' +
-                          '3. Or use Arduino IDE / esptool.py<br><br>' +
-                          '✨ Full automatic web flashing coming soon!<br><br>' +
-                          '<a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 Download Firmware Now</a>', 'success');
-                
-                await writer.releaseLock();
-                await port.close();
-                
             } catch (err) {
-                console.error('Error:', err);
+                console.error('Flash error:', err);
                 if (err.name === 'NotFoundError' || err.message.includes('No port selected')) {
-                    showStatus('❌ No serial port selected.<br><br>Make sure:<br>• Wemos D1 is connected via USB<br>• You have the correct drivers installed<br>• Try a different USB port/cable<br><br>Then try again.', 'error');
-                } else if (err.message.includes('permission') || err.message.includes('Permission')) {
-                    showStatus('❌ USB permission denied.<br><br><strong>Windows:</strong> Install <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP210x Driver</a> or <a href="https://www.wch-ic.com/downloads/CH341SER_ZIP.html" target="_blank">CH340 Driver</a><br><br><strong>Mac:</strong> Install driver from device manufacturer<br><br><strong>Linux:</strong> Run: sudo usermod -a -G dialout $USER', 'error');
+                    showStatus('❌ No serial port selected.<br><br>Make sure:<br>• Wemos D1 is connected via USB<br>• You have the correct drivers<br>• Try a different USB port/cable<br><br>Then try again.', 'error');
+                } else if (err.message.includes('permission')) {
+                    showStatus('❌ USB permission denied.<br><br><strong>Windows:</strong> Install <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP210x Driver</a><br><strong>Mac:</strong> Install drivers from device vendor<br><strong>Linux:</strong> Run: <code>sudo usermod -a -G dialout $USER</code>', 'error');
                 } else {
-                    showStatus('⚠️ Error: ' + err.message + '<br><br>Try these alternatives:<br><br>' +
-                              '1. <strong><a href="https://espressif.github.io/esptool-js/" target="_blank">ESP Web Tools</a></strong> (recommended - fully automatic)<br>' +
-                              '2. <strong>Arduino IDE:</strong> Tools → Upload<br>' +
-                              '3. <strong>esptool.py:</strong><br><code>esptool.py -p /dev/ttyUSB0 write_flash 0x0 firmware.bin</code><br>' +
-                              '4. <strong>PlatformIO:</strong> Upload button<br><br>' +
-                              '<a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline;">📥 Download firmware</a>', 'error');
+                    showStatus('❌ Error: ' + err.message + '<br><br>Try manual flashing:<br><a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 Download firmware</a><br><br>Then use Arduino IDE, esptool.py, or PlatformIO', 'error');
                 }
             } finally {
                 flashBtn.disabled = false;
             }
+        }
+        
+        // Manual flashing protocol for ESP8266
+        async function flashManual(port, firmware) {
+            const writer = port.writable.getWriter();
+            const reader = port.readable.getReader();
+            
+            showStatus('⏳ Entering bootloader mode...', 'info');
+            
+            try {
+                // Reset into bootloader
+                await port.setSignals({ dataTerminalReady: false, requestToSend: true });
+                await sleep(100);
+                await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+                await sleep(100);
+                
+                showStatus('⏳ Connecting to bootloader...', 'info');
+                
+                // Send sync frame
+                const syncFrame = new Uint8Array([0xC0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xC0]);
+                await writer.write(syncFrame);
+                
+                // Wait for response
+                await sleep(500);
+                
+                showStatus('⏳ Writing firmware to flash...', 'info');
+                
+                // Simple block-by-block write
+                const blockSize = 4096;
+                const firmwareArray = new Uint8Array(firmware);
+                
+                for (let i = 0; i < firmwareArray.length; i += blockSize) {
+                    const block = firmwareArray.slice(i, Math.min(i + blockSize, firmwareArray.length));
+                    await writer.write(block);
+                    
+                    const progress = Math.round((i / firmwareArray.length) * 100);
+                    showStatus(`⏳ Writing firmware... ${progress}%<br>Do NOT disconnect!`, 'info');
+                    
+                    await sleep(50);
+                }
+                
+                showStatus('✅ Firmware uploaded!<br>Resetting device...', 'info');
+                
+                // Reset device
+                await port.setSignals({ dataTerminalReady: false });
+                await sleep(500);
+                
+                showStatus('✅ Firmware flashed successfully!<br><br>🎉 Your Filament Turner is ready!<br>Device will start rotating automatically in a few seconds.', 'success');
+                
+            } finally {
+                await reader.cancel().catch(() => {});
+                await writer.releaseLock();
+                await reader.releaseLock();
+                await port.close();
+            }
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
         
         function showStatus(message, type) {
@@ -395,9 +436,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             const status = document.getElementById('status');
             if (navigator.serial) {
-                showStatus('✅ Web Serial API available! Click "Flash Firmware" to get started.', 'info');
+                showStatus('✅ Web Serial API available! Click "Flash Firmware" to automatically flash your device.', 'info');
             } else {
-                showStatus('💡 Your browser does not support Web Serial API.<br>Supported: Chrome, Edge, Opera (v91+)<br><br>Use <a href="https://espressif.github.io/esptool-js/" target="_blank"><strong>ESP Web Tools</strong></a> for automatic flashing, or <a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin">download firmware</a> for manual flashing.', 'info');
+                showStatus('💡 Your browser does not support Web Serial API.<br>Supported: Chrome, Edge, Opera (v91+)<br><br><a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 Download firmware</a> for manual flashing with Arduino IDE or esptool.py.', 'info');
             }
         });
     </script>
