@@ -277,17 +277,14 @@
             </div>
             
             <div class="button-group">
-                <button class="button button-primary" onclick="flashFirmware()" id="flashBtn">
-                    ⚡ Flash Firmware
-                </button>
+                <esp-web-install-button id="installButton" manifest="manifest.json">
+                </esp-web-install-button>
                 <a href="https://github.com/mybesttools/Wemos-Filament-Turner/blob/main/docs/BUILD_GUIDE.md" class="button button-secondary" target="_blank">
                     📖 Installation Guide
                 </a>
             </div>
             
-            <div class="status info" id="status" style="display: none;">
-                Ready to flash. Click the button above and select your Wemos D1.
-            </div>
+            <div id="status" style="display: none;"></div>
         </div>
         
         <div class="footer">
@@ -301,99 +298,24 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/esp-web-tools@10/dist/web/bundle.js"></script>
-    <script>
-        // Full automatic web flashing using ESP Web Tools
-        window.flashFirmware = async function() {
-            const status = document.getElementById('status');
-            const flashBtn = document.getElementById('flashBtn');
-            
-            if (!navigator.serial) {
-                showStatus('❌ Web Serial API not available in your browser.<br><br>Supported browsers: Chrome, Edge, Opera (v91+)<br><br>Alternative options:<br>' +
-                          '• Download the <a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 firmware file</a> and use:<br>' +
-                          '  - Arduino IDE (Tools → Upload)<br>' +
-                          '  - esptool.py: <code>esptool.py write_flash 0x0 firmware.bin</code><br>' +
-                          '  - PlatformIO (Upload button)', 'error');
-                return;
-            }
-            
-            try {
-                flashBtn.disabled = true;
-                showStatus('🔍 Requesting serial port... Select your Wemos D1', 'info');
-                
-                const port = await navigator.serial.requestPort();
-                
-                showStatus('⏳ Downloading firmware...', 'info');
-                
-                // Fetch firmware
-                const response = await fetch('https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin');
-                if (!response.ok) throw new Error('Failed to download firmware');
-                const firmware = await response.arrayBuffer();
-                const firmwareSize = Math.round(firmware.byteLength / 1024);
-                
-                showStatus(`⏳ Flashing ${firmwareSize}KB to device...<br>Do NOT disconnect! This takes 1-2 minutes.`, 'info');
-                
-                // Use ESP Web Tools for flashing - it handles port opening
-                if (!window.espWebTools) {
-                    throw new Error('ESP Web Tools library not loaded');
-                }
-                
-                // Create the transport and flash
-                const transport = new window.espWebTools.Transport(port);
-                const chip = new window.espWebTools.Chip(transport);
-                
-                showStatus('⏳ Detecting device...', 'info');
-                const chipName = await chip.getChipName();
-                
-                showStatus(`⏳ Found ${chipName}. Flashing firmware...`, 'info');
-                
-                await chip.flashBin({
-                    fileArray: [
-                        {
-                            address: 0x0,
-                            data: new Uint8Array(firmware)
-                        }
-                    ],
-                    flashMode: 'dio',
-                    flashFreq: '40m',
-                    flashSize: 'detect'
-                });
-                
-                showStatus('✅ Firmware flashed successfully!<br><br>🎉 Your Filament Turner is ready!<br>Device will start rotating automatically in a few seconds.<br><br>See <a href="releases.html">releases page</a> for configuration options.', 'success');
-                
-            } catch (err) {
-                console.error('Flash error:', err);
-                
-                if (err.name === 'NotFoundError' || err.message.includes('No port selected')) {
-                    showStatus('❌ No serial port selected.<br><br>Make sure:<br>• Wemos D1 is connected via USB<br>• You have the correct drivers<br>• Try a different USB port/cable<br><br>Then try again.', 'error');
-                } else if (err.message.includes('permission') || err.message.includes('Permission denied')) {
-                    showStatus('❌ USB permission denied.<br><br><strong>Windows:</strong> Install <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP210x Driver</a><br><strong>Mac:</strong> Install drivers from device vendor<br><strong>Linux:</strong> Run: <code>sudo usermod -a -G dialout $USER</code><br><br>Restart browser after installing drivers.', 'error');
-                } else if (err.message.includes('not loaded')) {
-                    showStatus('❌ ESP Web Tools library failed to load. Try:<br><br>1. Reload this page<br>2. Clear browser cache<br>3. Try a different browser<br><br>Or use manual flashing:<br><a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 Download firmware</a>', 'error');
-                } else {
-                    showStatus('❌ Error: ' + err.message + '<br><br>Try manual flashing:<br><a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 Download firmware</a><br><br>Then use Arduino IDE, esptool.py, or PlatformIO', 'error');
-                }
-            } finally {
-                flashBtn.disabled = false;
-            }
+    <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js"></script>
+    <style>
+        esp-web-install-button::part(button) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            padding: 12px 30px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
         }
         
-        function showStatus(message, type) {
-            const status = document.getElementById('status');
-            status.innerHTML = message;
-            status.className = 'status ' + type;
-            status.style.display = 'block';
+        esp-web-install-button::part(button):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
         }
-        
-        // Show initial status on load
-        document.addEventListener('DOMContentLoaded', function() {
-            const status = document.getElementById('status');
-            if (navigator.serial) {
-                showStatus('✅ Web Serial API available! Click "Flash Firmware" to automatically flash your device.', 'info');
-            } else {
-                showStatus('💡 Your browser does not support Web Serial API.<br>Supported: Chrome, Edge, Opera (v91+)<br><br><a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin" style="color: #667eea; text-decoration: underline; font-weight: bold;">📥 Download firmware</a> for manual flashing with Arduino IDE or esptool.py.', 'info');
-            }
-        });
-    </script>
+    </style>
 </body>
 </html>
