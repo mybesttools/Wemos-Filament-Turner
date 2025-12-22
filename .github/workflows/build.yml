@@ -50,11 +50,19 @@ jobs:
       with:
         files: |
           docs/firmware/filament_turner.bin
-        tag_name: v${{ github.run_number }}
-        name: Build ${{ github.run_number }}
+        tag_name: v0.99
+        name: v0.99 - Filament Turner Firmware
         body: |
-          Automated firmware build from latest commit
-          **Commit**: ${{ github.sha }}
-          **Date**: $(date)
+          Filament Turner Controller Firmware v0.99
+          
+          **Features:**
+          - 720°/hour continuous rotation
+          - Complete 360° rotation every 30 minutes
+          - USB powered operation
+          - Smooth half-step motor control
+          
+          **Hardware:** Wemos D1 + 28BYJ-48 motor + ULN2003AN driver
+          
+          See [BUILD_GUIDE](https://github.com/mybesttools/Wemos-Filament-Turner/blob/main/docs/BUILD_GUIDE.md) for installation instructions.
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
