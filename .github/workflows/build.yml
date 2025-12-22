@@ -47,7 +47,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
-    - name: Create Release
+    - name: Create or Update Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
@@ -62,9 +62,12 @@ jobs:
           - Complete 360° rotation every 30 minutes
           - USB powered operation
           - Smooth half-step motor control
+          - Web Serial API flashing support
           
           **Hardware:** Wemos D1 + 28BYJ-48 motor + ULN2003AN driver
           
           See [BUILD_GUIDE](https://github.com/mybesttools/Wemos-Filament-Turner/blob/main/docs/BUILD_GUIDE.md) for installation instructions.
+        draft: false
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
