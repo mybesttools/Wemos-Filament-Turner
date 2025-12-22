@@ -282,7 +282,7 @@
                 </a>
             </div>
             
-            <div class="status info" id="status">
+            <div class="status info" id="status" style="display: none;">
                 Loading...
             </div>
         </div>
@@ -295,56 +295,57 @@
     
     <script>
         // Simple initialization - remove complex async imports
-        window.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+        
+        // Also run immediately in case DOMContentLoaded already fired
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePage);
+        } else {
+            initializePage();
+        }
+        
+        function initializePage() {
             const status = document.getElementById('status');
             
             // Check if Web Serial API is available
             if (navigator.serial) {
-                status.innerHTML = '✅ Web Serial API available - You can use direct flashing';
-                status.className = 'status info';
+                showStatus('✅ Web Serial API available! Click "Flash Firmware" to get started.', 'info');
             } else {
-                status.innerHTML = '💡 Web Serial API not available in your browser. Use the download method below or try Chrome/Edge.';
-                status.className = 'status info';
+                showStatus('💡 Web Serial API not available in your browser. Chrome/Edge recommended. You can still <strong>download firmware</strong> for manual flashing.', 'info');
             }
-        });
+        }
         
         window.flashFirmware = async function() {
             const status = document.getElementById('status');
             
             if (!navigator.serial) {
-                status.innerHTML = '📥 Downloading firmware... Open it with esptool.py or Arduino IDE';
-                status.className = 'status info';
-                downloadFirmware();
+                showStatus('📥 <strong>Download Firmware</strong><br>Use Arduino IDE or esptool.py to flash manually.<br><a href="https://github.com/mybesttools/Wemos-Filament-Turner/releases" target="_blank">Get latest firmware</a>', 'info');
                 return;
             }
             
             try {
-                status.innerHTML = '🔍 Requesting serial port...';
-                status.className = 'status info';
+                showStatus('🔍 Requesting serial port... Select your Wemos D1', 'info');
                 
                 const port = await navigator.serial.requestPort();
-                await port.open({ baudRate: 115200 });
                 
-                status.innerHTML = '⚠️ Web flashing not yet implemented. Please use the download method.';
-                status.className = 'status error';
-                
-                await port.close();
-                downloadFirmware();
+                showStatus('⚠️ Direct web flashing requires additional tools.<br><strong>Use Arduino IDE or esptool.py instead</strong><br>Or <a href="https://github.com/mybesttools/Wemos-Filament-Turner#installation" target="_blank">see installation guide</a>', 'error');
                 
             } catch (err) {
-                status.innerHTML = '📥 <strong>Download the firmware binary</strong> and use:<br>' +
-                                 '• Arduino IDE (Tools → Upload)<br>' +
-                                 '• esptool.py: <code>esptool.py write_flash 0x0 firmware.bin</code>';
-                status.className = 'status info';
-                downloadFirmware();
+                if (err.name === 'NotFoundError') {
+                    showStatus('❌ No port selected. Connect your Wemos D1 and try again.', 'error');
+                } else {
+                    showStatus('📥 <a href="https://github.com/mybesttools/Wemos-Filament-Turner/releases" target="_blank"><strong>Download Firmware</strong></a><br>Then use Arduino IDE or esptool.py', 'info');
+                }
             }
         }
         
-        function downloadFirmware() {
-            const link = document.createElement('a');
-            link.href = 'https://github.com/mybesttools/Wemos-Filament-Turner/releases/download/latest/filament_turner.bin';
-            link.download = 'filament_turner.bin';
-            link.click();
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
         }
     </script>
 </body>
