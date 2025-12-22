@@ -321,7 +321,7 @@
             const status = document.getElementById('status');
             
             if (!navigator.serial) {
-                showStatus('📥 <strong>Download Firmware</strong><br>Use Arduino IDE or esptool.py to flash manually.<br><a href="https://github.com/mybesttools/Wemos-Filament-Turner/releases" target="_blank">Get latest firmware</a>', 'info');
+                showStatus('📥 <a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin"><strong>Download Firmware</strong></a><br>Use Arduino IDE or esptool.py to flash manually.', 'info');
                 return;
             }
             
@@ -330,13 +330,13 @@
                 
                 const port = await navigator.serial.requestPort();
                 
-                showStatus('⚠️ Direct web flashing requires additional tools.<br><strong>Use Arduino IDE or esptool.py instead</strong><br>Or <a href="https://github.com/mybesttools/Wemos-Filament-Turner#installation" target="_blank">see installation guide</a>', 'error');
+                showStatus('⚠️ Direct web flashing requires additional tools.<br><strong>Use Arduino IDE or esptool.py instead</strong><br><a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin">Download Firmware</a>', 'error');
                 
             } catch (err) {
                 if (err.name === 'NotFoundError') {
                     showStatus('❌ No port selected. Connect your Wemos D1 and try again.', 'error');
                 } else {
-                    showStatus('📥 <a href="https://github.com/mybesttools/Wemos-Filament-Turner/releases" target="_blank"><strong>Download Firmware</strong></a><br>Then use Arduino IDE or esptool.py', 'info');
+                    showStatus('📥 <a href="https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin" download="filament_turner.bin"><strong>Download Firmware</strong></a><br>Then use Arduino IDE or esptool.py', 'info');
                 }
             }
         }

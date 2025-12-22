@@ -35,13 +35,15 @@ jobs:
       run: |
         mkdir -p docs/firmware
         cp .pio/build/d1_mini/firmware.bin docs/firmware/filament_turner.bin
+        # Also create a 'latest' symlink for easy downloading
+        cp .pio/build/d1_mini/firmware.bin docs/firmware/latest.bin
     
-    - name: Commit and push firmware
+    - name: Commit and push firmware and docs
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add docs/firmware/filament_turner.bin
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Build firmware: $(date)" && git push)
+        git add docs/
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Update firmware: $(date)" && git push origin main)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
