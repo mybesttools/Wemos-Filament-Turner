@@ -278,6 +278,9 @@
             
             <div class="button-group">
                 <esp-web-install-button id="installButton" manifest="manifest.json">
+                    <button slot="activate" class="button button-primary">
+                        ⚡ Flash Firmware
+                    </button>
                 </esp-web-install-button>
                 <a href="https://github.com/mybesttools/Wemos-Filament-Turner/blob/main/docs/BUILD_GUIDE.md" class="button button-secondary" target="_blank">
                     📖 Installation Guide
@@ -315,6 +318,10 @@
         esp-web-install-button::part(button):hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+        
+        esp-web-install-button {
+            --esp-tools-button-color: #667eea;
         }
     </style>
 </body>
