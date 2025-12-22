@@ -301,9 +301,10 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/esptool-js@0.6.0/bundle.js"></script>
-    <script>
-        // Web Serial flashing using proper esptool.js
+    <script type="module">
+        // Web Serial flashing with minimal implementation
+        import { ESPLoader, Transport } from "https://unpkg.com/esp-web-tools@9.4.1/dist/web/index.js";
+        
         window.flashFirmware = async function() {
             const status = document.getElementById('status');
             const flashBtn = document.getElementById('flashBtn');
@@ -322,30 +323,25 @@
                 
                 showStatus('⏳ Connecting to device...', 'info');
                 
-                // Initialize esptool.js
-                const espLoader = new EspLoader.ESPLoader();
+                // Create transport and loader
+                const transport = new Transport(port);
+                const espLoader = new ESPLoader(transport);
                 
-                showStatus('⏳ Checking device...', 'info');
-                const chip = await espLoader.getChipDescription(port);
+                showStatus('⏳ Detecting chip...', 'info');
+                const chipName = await espLoader.detectChip();
                 
-                showStatus(`⏳ Found ${chip}. Downloading firmware...`, 'info');
+                showStatus(`✅ Found ${chipName}. Downloading firmware...`, 'info');
                 
                 // Fetch the firmware binary
                 const response = await fetch('https://raw.githubusercontent.com/mybesttools/Wemos-Filament-Turner/main/docs/firmware/latest.bin');
                 if (!response.ok) throw new Error('Failed to download firmware');
                 const firmware = await response.arrayBuffer();
-                const firmwareArray = new Uint8Array(firmware);
                 
-                showStatus(`⏳ Flashing ${firmwareArray.length} bytes to device...`, 'info');
+                showStatus(`⏳ Flashing firmware (${Math.round(firmware.byteLength / 1024)}KB)...`, 'info');
                 
-                // Flash the firmware
+                // Flash with proper parameters
                 await espLoader.writeFlash({
-                    fileArray: [
-                        {
-                            data: firmwareArray,
-                            address: 0x0
-                        }
-                    ],
+                    fileArray: [{ data: new Uint8Array(firmware), address: 0x0 }],
                     flashMode: 'dio',
                     flashFreq: '40m',
                     flashSize: 'detect'
@@ -353,17 +349,18 @@
                 
                 showStatus('✅ Firmware flashed successfully!<br><br>🎉 Your Filament Turner is ready!<br>Device will start rotating automatically in a few seconds.<br><br>See <a href="releases.html">releases page</a> for more info.', 'success');
                 
-                // Close port
+                // Reset and close
+                await espLoader.hardReset();
                 await port.close();
                 
             } catch (err) {
                 console.error('Flash error:', err);
                 if (err.name === 'NotFoundError' || err.message.includes('No port selected')) {
-                    showStatus('❌ No serial port selected. Make sure your Wemos D1 is connected, check:\n\n• USB cable is connected\n• Device appears in system\n• Try different USB port\n\nThen click "Flash Firmware" again.', 'error');
+                    showStatus('❌ No serial port selected. Make sure your Wemos D1 is connected, check:\n• USB cable is connected\n• Device appears in system\n• Try different USB port\n\nThen click "Flash Firmware" again.', 'error');
                 } else if (err.message.includes('permission') || err.message.includes('Permission')) {
-                    showStatus('❌ Permission denied. Check USB drivers:<br><br><strong>Windows:</strong> Install <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP210x Driver</a> or <a href="https://www.wch-ic.com/downloads/CH341SER_ZIP.html" target="_blank">CH340 Driver</a><br><br><strong>Mac/Linux:</strong> May need udev rules (see guides)<br><br>Then try again.', 'error');
+                    showStatus('❌ Permission denied. Check USB drivers:<br><br><strong>Windows:</strong> Install <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP210x Driver</a> or <a href="https://www.wch-ic.com/downloads/CH341SER_ZIP.html" target="_blank">CH340 Driver</a><br><br><strong>Mac/Linux:</strong> May need udev rules<br><br>Then try again.', 'error');
                 } else if (err.message.includes('timeout') || err.message.includes('Timeout')) {
-                    showStatus('❌ Device timeout. Check:<br>• USB cable is connected\n• Device is powered\n• Try different USB port<br><br>Then try again.', 'error');
+                    showStatus('❌ Device timeout. Check:\n• USB cable is connected\n• Device is powered\n• Try different USB port\n\nThen try again.', 'error');
                 } else {
                     showStatus('❌ Flashing error: ' + err.message + '<br><br>Try these alternatives:<br><br>' +
                               '1. <strong><a href="https://espressif.github.io/esptool-js/" target="_blank">ESP Web Tools</a></strong> (recommended)<br>' +
