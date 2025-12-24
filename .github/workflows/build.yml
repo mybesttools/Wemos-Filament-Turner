@@ -69,5 +69,7 @@ jobs:
           See [BUILD_GUIDE](https://github.com/mybesttools/Wemos-Filament-Turner/blob/main/docs/BUILD_GUIDE.md) for installation instructions.
         draft: false
         prerelease: false
+        generate_release_notes: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
