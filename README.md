@@ -2,6 +2,8 @@
 
 A firmware for controlling a filament turner using a Wemos D1 clone, 28BYJ-48 stepper motor, and ULN2003AN driver. The device rotates continuously at **720° per hour** (one complete 360° rotation every 30 minutes).
 
+**📍 See the project on MakerWorld:** [Automatic Filament Rotator - 2 x 360°/hour](https://makerworld.com/en/models/2138653-automatic-filament-rotator-2-x-360-degr-hour#profileId-2316528)
+
 ## Features
 
 - ✅ Continuous rotation at 720°/hour
@@ -106,6 +108,12 @@ Open Serial Monitor at **115200 baud** to see:
 ## License
 
 MIT License
+
+## Resources
+
+- **MakerWorld:** [Automatic Filament Rotator - 2 x 360°/hour](https://makerworld.com/en/models/2138653-automatic-filament-rotator-2-x-360-degr-hour#profileId-2316528)
+- **GitHub:** [Wemos-Filament-Turner](https://github.com/mybesttools/Wemos-Filament-Turner)
+- **Web Installer:** [mybesttools.github.io/Wemos-Filament-Turner](https://mybesttools.github.io/Wemos-Filament-Turner/)
 
 ## Author
 
